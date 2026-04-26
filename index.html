@@ -1,0 +1,1599 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tôi Học Nói Lời Yêu Thương | XLeaders Academy</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<!-- Microsoft Authentication Library (MSAL) for Graph API — primary + fallback CDN -->
+<script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@2.38.4/lib/msal-browser.min.js"
+        onerror="this.onerror=null;var s=document.createElement('script');s.src='https://unpkg.com/@azure/msal-browser@2.38.4/lib/msal-browser.min.js';document.head.appendChild(s);"></script>
+<!-- Firebase SDK — for shared wall (Realtime Database) -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<style>
+  :root{
+    /* XLeaders brand palette */
+    --xl-red:#C22620;
+    --xl-red-dark:#9a1d18;
+    --xl-red-soft:#e85951;
+    --xl-gold:#D4AF37;
+    --xl-gold-light:#e8c963;
+    --xl-gold-soft:#f5e7b3;
+    --xl-cream:#FFF8E1;
+    --xl-cream-deep:#fdefc4;
+    --xl-black:#1A1A1A;
+    --xl-navy:#1B2A4A;
+    --xl-gray:#CCCCCC;
+    --xl-ink:#2a2a2a;
+    --xl-ink-soft:#5a5a5a;
+    --shadow:0 8px 28px rgba(194,38,32,.12);
+    --shadow-lg:0 18px 50px rgba(194,38,32,.22);
+    --shadow-gold:0 8px 24px rgba(212,175,55,.28);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:'Aptos Display','Aptos','Segoe UI','Inter',system-ui,sans-serif;
+    color:var(--xl-ink);
+    background:
+      radial-gradient(circle at 8% 8%, rgba(212,175,55,.18) 0%, transparent 35%),
+      radial-gradient(circle at 92% 12%, rgba(194,38,32,.10) 0%, transparent 38%),
+      radial-gradient(circle at 50% 100%, rgba(212,175,55,.10) 0%, transparent 50%),
+      var(--xl-cream);
+    min-height:100vh;line-height:1.6;overflow-x:hidden;
+  }
+
+  /* ===== Brand banner (red fill + gold text, centered, full width) ===== */
+  .xl-banner{
+    background:linear-gradient(135deg,var(--xl-red) 0%,var(--xl-red-dark) 100%);
+    color:var(--xl-gold);
+    text-align:center;padding:14px 20px;
+    font-weight:700;letter-spacing:2px;font-size:14px;
+    text-transform:uppercase;
+    border-bottom:3px solid var(--xl-gold);
+    display:flex;align-items:center;justify-content:center;gap:18px;
+  }
+  .banner-logo{flex-shrink:0;opacity:.9}
+
+  /* ===== Floating hearts background ===== */
+  .floating-hearts{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+  .heart{position:absolute;font-size:20px;opacity:0;animation:floatUp linear infinite}
+  @keyframes floatUp{
+    0%{transform:translateY(110vh) scale(.6) rotate(0);opacity:0}
+    10%{opacity:.55}
+    90%{opacity:.35}
+    100%{transform:translateY(-10vh) scale(1.1) rotate(360deg);opacity:0}
+  }
+
+  .container{max-width:1200px;margin:0 auto;padding:36px 24px;position:relative;z-index:1}
+
+  /* ===== Header ===== */
+  header{text-align:center;padding:44px 16px 28px}
+  .brand-logo{
+    margin-bottom:20px;
+    filter:drop-shadow(0 12px 28px rgba(194,38,32,.30));
+    animation:logoFloat 4s ease-in-out infinite;
+  }
+  @keyframes logoFloat{
+    0%,100%{transform:translateY(0)}
+    50%{transform:translateY(-6px)}
+  }
+  .brand-title{margin-bottom:18px}
+  .brand-name{
+    font-family:'Oswald', sans-serif;
+    font-size:clamp(58px,9.5vw,96px);
+    font-weight:600;line-height:1;letter-spacing:1px;
+    text-transform:uppercase;
+    background:linear-gradient(135deg,var(--xl-red) 0%,var(--xl-red-dark) 50%,var(--xl-gold) 100%);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+    margin:0 0 14px;
+  }
+  .brand-divider{
+    display:flex;align-items:center;justify-content:center;gap:14px;
+    max-width:280px;margin:0 auto 18px;
+  }
+  .brand-divider .line{
+    flex:1;height:1px;
+    background:linear-gradient(90deg,transparent,var(--xl-gold),transparent);
+  }
+  .brand-divider .diamond{color:var(--xl-gold);font-size:14px}
+  .brand-tagline{
+    font-family:'Aptos Display','Aptos','Segoe UI','Inter',sans-serif;
+    font-size:clamp(17px,2.4vw,22px);
+    color:var(--xl-navy);font-weight:400;
+    max-width:680px;margin:0 auto;line-height:1.5;
+  }
+  .brand-tagline em{
+    font-style:italic;font-weight:700;
+    color:var(--xl-red);
+    position:relative;
+  }
+  .brand-tagline em::after{
+    content:"";position:absolute;left:0;right:0;bottom:-2px;height:2px;
+    background:linear-gradient(90deg,var(--xl-gold),transparent);
+    opacity:.7;
+  }
+  .quote{
+    margin:30px auto 0;padding:20px 30px;max-width:580px;
+    border-left:4px solid var(--xl-gold);
+    font-family:'Aptos Display','Aptos','Segoe UI','Inter',sans-serif;font-style:italic;
+    color:var(--xl-navy);font-size:16.5px;
+    background:#fff;border-radius:0 14px 14px 0;
+    box-shadow:var(--shadow);
+  }
+  .quote::before{content:"« ";color:var(--xl-gold);font-size:24px;font-weight:700}
+  .quote::after{content:" »";color:var(--xl-gold);font-size:24px;font-weight:700}
+
+  /* ===== Layout ===== */
+  .grid{display:grid;grid-template-columns:1.1fr 1fr;gap:30px;margin-top:40px}
+  @media (max-width:900px){.grid{grid-template-columns:1fr}}
+
+  .card{
+    background:#fff;
+    border-radius:18px;padding:0;
+    box-shadow:var(--shadow);
+    overflow:hidden;
+    border:1px solid rgba(212,175,55,.25);
+    transition:box-shadow .3s ease, transform .3s ease;
+  }
+  .card:hover{box-shadow:var(--shadow-lg)}
+  .card-head{
+    background:linear-gradient(135deg,var(--xl-red) 0%,var(--xl-red-dark) 100%);
+    color:var(--xl-gold);
+    padding:18px 26px;
+    display:flex;align-items:center;gap:12px;
+    border-bottom:2px solid var(--xl-gold);
+  }
+  .card-head h2{
+    font-family:'Oswald', sans-serif;
+    font-size:21px;font-weight:500;color:var(--xl-gold);
+    letter-spacing:2px;text-transform:uppercase;
+  }
+  .card-head .ico{
+    width:36px;height:36px;border-radius:50%;
+    background:rgba(212,175,55,.18);
+    border:1.5px solid var(--xl-gold);
+    display:flex;align-items:center;justify-content:center;font-size:18px;
+  }
+  .card-body{padding:26px 28px 30px}
+  .card-body .hint{color:var(--xl-ink-soft);font-size:14px;margin-bottom:20px}
+
+  /* ===== Form ===== */
+  label{display:block;font-weight:600;font-size:13px;margin:14px 0 8px;color:var(--xl-navy);text-transform:uppercase;letter-spacing:.5px}
+  input[type=text],select,textarea{
+    width:100%;padding:13px 16px;border-radius:10px;
+    border:1.5px solid #e5d6a8;
+    background:#fff;font-family:inherit;font-size:15px;color:var(--xl-ink);
+    transition:all .2s ease;
+  }
+  input[type=text]:focus,select:focus,textarea:focus{
+    outline:none;border-color:var(--xl-red);
+    box-shadow:0 0 0 4px rgba(194,38,32,.10);
+  }
+  textarea{min-height:130px;resize:vertical;line-height:1.7}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media (max-width:560px){.row{grid-template-columns:1fr}}
+
+  /* ===== Type chips ===== */
+  .types{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+  .chip{
+    padding:9px 14px;border-radius:8px;font-size:13px;font-weight:600;
+    background:#fff;border:1.5px solid #e5d6a8;cursor:pointer;
+    color:var(--xl-ink-soft);transition:all .2s ease;user-select:none;
+  }
+  .chip:hover{border-color:var(--xl-red);color:var(--xl-red)}
+  .chip.active{
+    background:linear-gradient(135deg,var(--xl-red),var(--xl-red-dark));
+    color:var(--xl-gold);border-color:var(--xl-gold);
+    box-shadow:0 6px 16px rgba(194,38,32,.32);
+  }
+
+  /* ===== Suggestion ===== */
+  .suggest{
+    margin-top:14px;padding:14px 16px;border-radius:10px;
+    background:linear-gradient(135deg,var(--xl-cream-deep),var(--xl-cream));
+    border:1px dashed var(--xl-gold);
+    font-size:14px;color:var(--xl-ink);
+    display:flex;align-items:flex-start;gap:10px;
+  }
+  .suggest > span:first-child{color:var(--xl-red);font-size:18px}
+  .suggest button{
+    margin-left:auto;background:none;border:0;color:var(--xl-red);
+    font-weight:700;cursor:pointer;font-size:13px;white-space:nowrap;
+    font-family:inherit;text-transform:uppercase;letter-spacing:.5px;
+  }
+  .suggest button:hover{text-decoration:underline}
+
+  /* ===== Buttons ===== */
+  .actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+  .btn{
+    flex:1;min-width:140px;
+    padding:14px 22px;border-radius:10px;border:0;cursor:pointer;
+    font-family:inherit;font-weight:700;font-size:14px;
+    transition:all .2s ease;display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    text-transform:uppercase;letter-spacing:.5px;
+  }
+  .btn-primary{
+    background:linear-gradient(135deg,var(--xl-red),var(--xl-red-dark));
+    color:var(--xl-gold);
+    border:1.5px solid var(--xl-gold);
+    box-shadow:0 8px 22px rgba(194,38,32,.30);
+  }
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(194,38,32,.40)}
+  .btn-ghost{background:#fff;color:var(--xl-red);border:1.5px solid var(--xl-red)}
+  .btn-ghost:hover{background:var(--xl-cream)}
+
+  /* ===== Outlook section ===== */
+  .outlook-row{
+    margin-top:22px;padding:18px;border-radius:12px;
+    background:linear-gradient(135deg,#f5f9ff 0%,#eef4ff 100%);
+    border:1.5px solid #d6e3f5;
+  }
+  .outlook-label{
+    display:flex;align-items:center;gap:10px;
+    font-size:13px;font-weight:600;color:#1B2A4A;
+    margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px;
+  }
+  .ms-icon{display:inline-grid;grid-template-columns:1fr 1fr;gap:2px;width:16px;height:16px}
+  .ms-icon span{display:block;width:7px;height:7px}
+  .outlook-buttons{display:flex;flex-wrap:wrap;gap:8px}
+  .btn-outlook{
+    flex:1;min-width:130px;
+    background:#fff;color:#0078D4;
+    border:1.5px solid #0078D4;
+    padding:11px 16px;border-radius:8px;cursor:pointer;
+    font-family:inherit;font-weight:600;font-size:13px;
+    display:inline-flex;align-items:center;justify-content:center;gap:6px;
+    transition:all .2s ease;
+  }
+  .btn-outlook:hover{background:#0078D4;color:#fff;transform:translateY(-1px);box-shadow:0 6px 16px rgba(0,120,212,.25)}
+  .btn-outlook svg{flex-shrink:0}
+
+  .gear-btn{
+    margin-left:auto;background:transparent;border:1px solid #d6e3f5;
+    border-radius:6px;padding:4px 10px;cursor:pointer;color:#1B2A4A;
+    font-size:14px;font-family:inherit;transition:all .15s ease;
+  }
+  .gear-btn:hover{background:#fff;border-color:#0078D4;color:#0078D4;transform:rotate(90deg)}
+
+  .auth-status{
+    display:flex;align-items:center;gap:10px;
+    padding:10px 14px;border-radius:8px;
+    background:#fff;border:1px solid #d6e3f5;
+    margin-bottom:12px;font-size:13px;color:var(--xl-ink-soft);
+  }
+  .auth-dot{
+    width:10px;height:10px;border-radius:50%;flex-shrink:0;
+    box-shadow:0 0 0 3px rgba(255,255,255,.8);
+  }
+  .auth-dot.off{background:#ccc}
+  .auth-dot.on{background:#22c55e;animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 3px rgba(34,197,94,.2)}50%{box-shadow:0 0 0 6px rgba(34,197,94,.1)}}
+  .auth-text{flex:1;line-height:1.4}
+  .auth-text b{color:var(--xl-navy)}
+  .auth-text a{color:#0078D4;text-decoration:none;cursor:pointer;font-weight:600}
+
+  .btn-graph{
+    flex:1;min-width:160px;
+    background:#fff;color:#1B2A4A;border:1.5px solid #1B2A4A;
+    padding:11px 16px;border-radius:8px;cursor:pointer;
+    font-family:inherit;font-weight:600;font-size:13px;
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    transition:all .2s ease;
+  }
+  .btn-graph:hover{background:#1B2A4A;color:#fff;transform:translateY(-1px)}
+
+  .btn-graph-send{
+    flex:1;min-width:160px;
+    background:linear-gradient(135deg,#0078D4,#005a9e);color:#fff;border:0;
+    padding:11px 16px;border-radius:8px;cursor:pointer;
+    font-family:inherit;font-weight:700;font-size:13px;
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    transition:all .2s ease;
+    box-shadow:0 6px 16px rgba(0,120,212,.30);
+  }
+  .btn-graph-send:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 10px 22px rgba(0,120,212,.45)}
+  .btn-graph-send:disabled{opacity:.5;cursor:not-allowed;background:#aaa;box-shadow:none}
+
+  /* Settings modal */
+  .settings-modal .modal-content{max-width:560px;text-align:left}
+  .settings-modal .modal-body{padding:24px 28px}
+  .settings-modal label{font-size:12px;color:var(--xl-navy)}
+  .settings-modal input{
+    width:100%;padding:11px 14px;border-radius:8px;
+    border:1.5px solid #e5d6a8;font-family:'Courier New',monospace;font-size:13px;
+  }
+  .settings-modal input:focus{outline:none;border-color:#0078D4;box-shadow:0 0 0 3px rgba(0,120,212,.10)}
+  .settings-modal .help{
+    font-size:12px;color:var(--xl-ink-soft);margin-top:4px;line-height:1.5;
+  }
+  .settings-modal .guide{
+    margin-top:18px;padding:14px 16px;border-radius:10px;
+    background:#f5f9ff;border:1px solid #d6e3f5;font-size:13px;line-height:1.7;
+  }
+  .settings-modal .guide b{color:#0078D4}
+  .settings-modal .guide ol{margin:8px 0 0 20px}
+  .settings-modal .guide code{
+    background:#fff;padding:1px 6px;border-radius:4px;
+    font-family:'Courier New',monospace;font-size:12px;color:var(--xl-red);
+    border:1px solid #e5e5e5;
+  }
+
+  /* ===== Preview / letter ===== */
+  .preview{
+    background:linear-gradient(135deg,#fff 0%,var(--xl-cream) 100%);
+    border-radius:12px;padding:28px;
+    border:2px solid var(--xl-gold);
+    min-height:240px;position:relative;overflow:hidden;
+    box-shadow:inset 0 0 0 1px rgba(212,175,55,.3);
+  }
+  .preview::before{
+    content:"";position:absolute;top:8px;left:8px;right:8px;bottom:8px;
+    border:1px dashed rgba(212,175,55,.5);border-radius:8px;pointer-events:none;
+  }
+  .preview .from-to{font-size:13px;color:var(--xl-ink-soft);margin-bottom:8px;position:relative}
+  .preview .from-to b{color:var(--xl-red);font-weight:700}
+  .preview .type-tag{
+    display:inline-block;padding:5px 14px;border-radius:6px;
+    background:var(--xl-red);color:var(--xl-gold);
+    font-size:11px;font-weight:700;margin-bottom:14px;
+    text-transform:uppercase;letter-spacing:1px;position:relative;
+  }
+  .preview .body{
+    font-family:'Aptos Display','Aptos','Segoe UI','Inter',sans-serif;
+    font-size:18px;font-style:italic;color:var(--xl-ink);
+    line-height:1.75;white-space:pre-wrap;word-wrap:break-word;position:relative;
+  }
+  .preview .signature{
+    margin-top:18px;font-size:14px;color:var(--xl-red);text-align:right;
+    font-family:'Aptos Display','Aptos','Segoe UI','Inter',sans-serif;font-style:italic;font-weight:600;position:relative;
+  }
+  .preview .placeholder{color:#bca87e;font-style:italic;font-family:'Aptos Display','Aptos','Segoe UI','Inter',sans-serif;font-size:17px;position:relative}
+
+  /* ===== Wall ===== */
+  .wall-section{margin-top:56px}
+  .wall-header{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:24px}
+  .wall-header h2{
+    font-family:'Oswald', sans-serif;font-size:34px;color:var(--xl-red);
+    display:flex;align-items:center;gap:12px;font-weight:600;
+    letter-spacing:1.5px;text-transform:uppercase;
+  }
+  .wall-header h2::before{
+    content:"";display:inline-block;width:48px;height:3px;
+    background:linear-gradient(90deg,var(--xl-gold),transparent);
+  }
+  .wall-stats{display:flex;gap:18px;font-size:13px;color:var(--xl-ink-soft);align-items:center}
+  .wall-stats .stat-pill{
+    background:#fff;padding:8px 16px;border-radius:999px;
+    border:1.5px solid var(--xl-gold);
+    font-weight:600;
+  }
+  .wall-stats b{color:var(--xl-red);font-size:18px;font-weight:800;margin-right:4px}
+
+  .wall{columns:3 280px;column-gap:20px}
+
+  .note{
+    break-inside:avoid;margin-bottom:20px;padding:0;
+    border-radius:14px;background:#fff;
+    box-shadow:var(--shadow);
+    border:1px solid var(--xl-gold);
+    position:relative;
+    transition:all .3s ease;
+    animation:popIn .5s ease-out;
+    overflow:hidden;
+  }
+  @keyframes popIn{
+    from{opacity:0;transform:scale(.9) translateY(15px)}
+    to{opacity:1;transform:scale(1) translateY(0)}
+  }
+  .note .ribbon{
+    background:linear-gradient(135deg,var(--xl-red),var(--xl-red-dark));
+    color:var(--xl-gold);padding:8px 16px;
+    display:flex;align-items:center;justify-content:space-between;
+    font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;
+    border-bottom:1px solid var(--xl-gold);
+  }
+  .note .ribbon small{color:var(--xl-cream);font-weight:500;letter-spacing:.3px;text-transform:none}
+  .note .nb{
+    padding:18px 20px 8px;
+    font-family:'Aptos Display','Aptos','Segoe UI','Inter',sans-serif;font-style:italic;
+    font-size:15px;line-height:1.75;color:var(--xl-ink);
+    white-space:pre-wrap;word-wrap:break-word;
+  }
+  .note .nf{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:10px 20px 18px;font-size:13px;color:var(--xl-ink-soft);
+  }
+  .note .nf b{color:var(--xl-red);font-weight:700}
+  .note .nf .react button{
+    background:var(--xl-cream);border:1.5px solid var(--xl-gold);
+    border-radius:999px;padding:4px 12px;font-size:12px;cursor:pointer;
+    font-family:inherit;color:var(--xl-red);font-weight:700;
+    transition:all .15s ease;
+  }
+  .note .nf .react button:hover{background:#fff;transform:scale(1.08)}
+  .note .del{
+    position:absolute;top:38px;right:8px;background:transparent;border:0;
+    color:#ccc;cursor:pointer;font-size:14px;opacity:0;transition:opacity .2s;
+    z-index:2;
+  }
+  .note:hover .del{opacity:1}
+  .note .del:hover{color:var(--xl-red)}
+
+  .empty{
+    text-align:center;padding:60px 20px;color:var(--xl-ink-soft);
+    font-family:'Aptos Display','Aptos','Segoe UI','Inter',sans-serif;font-style:italic;font-size:17px;
+    background:#fff;border-radius:14px;border:1px dashed var(--xl-gold);
+  }
+  .empty .heart-big{font-size:48px;display:block;margin-bottom:12px;color:var(--xl-red)}
+
+  /* ===== Wall sign-in gate ===== */
+  .wall-gate{
+    background:linear-gradient(135deg,#fff 0%,var(--xl-cream) 100%);
+    border:2px solid var(--xl-gold);
+    border-radius:18px;padding:60px 30px;
+    text-align:center;margin-top:20px;
+    box-shadow:var(--shadow-lg);
+  }
+  .wall-gate-icon{font-size:64px;margin-bottom:16px;color:var(--xl-red)}
+  .wall-gate h3{
+    font-family:'Oswald',sans-serif;font-size:26px;
+    color:var(--xl-red);text-transform:uppercase;letter-spacing:2px;
+    font-weight:600;margin-bottom:12px;
+  }
+  .wall-gate p{color:var(--xl-ink-soft);font-size:15px;line-height:1.7;max-width:520px;margin:0 auto}
+
+  .nauthor{
+    padding:6px 20px 14px;font-size:11px;color:#aaa;
+    border-top:1px dashed #f0e5c5;margin-top:4px;
+    font-family:'Courier New',monospace;
+  }
+
+  /* ===== Toolbar ===== */
+  .toolbar{
+    display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap;align-items:center;
+    background:#fff;padding:14px;border-radius:12px;
+    border:1px solid var(--xl-gold);box-shadow:var(--shadow);
+  }
+  .toolbar input{flex:1;min-width:200px;padding:10px 14px;border-radius:8px;border:1px solid #e5d6a8;font-family:inherit}
+  .toolbar select{padding:10px 14px;border-radius:8px;border:1px solid #e5d6a8;font-family:inherit;background:#fff;color:var(--xl-ink)}
+  .toolbar .btn{flex:0 0 auto;min-width:auto;padding:10px 16px;font-size:12px}
+
+  /* ===== Footer / watermark ===== */
+  footer{
+    text-align:center;padding:50px 20px 20px;color:var(--xl-ink-soft);font-size:13px;
+  }
+  .footer-divider{
+    display:flex;align-items:center;gap:14px;max-width:520px;margin:0 auto 20px;
+  }
+  .footer-divider::before,.footer-divider::after{
+    content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--xl-gold),transparent);
+  }
+  .footer-divider .diamond{color:var(--xl-gold);font-size:14px}
+  .footer-brand{
+    font-family:'Oswald', sans-serif;color:var(--xl-red);
+    font-weight:600;font-size:18px;letter-spacing:3px;margin-bottom:6px;
+    text-transform:uppercase;
+  }
+  .footer-domain{
+    color:var(--xl-gold);font-weight:700;letter-spacing:1.5px;
+    text-transform:uppercase;font-size:12px;
+  }
+
+  /* ===== Toast ===== */
+  .toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(40px);
+    background:linear-gradient(135deg,var(--xl-red),var(--xl-red-dark));
+    color:var(--xl-gold);padding:14px 24px;border-radius:10px;
+    box-shadow:var(--shadow-lg);font-weight:600;font-size:14px;
+    border:1.5px solid var(--xl-gold);
+    opacity:0;transition:all .3s ease;z-index:100;pointer-events:none;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  /* ===== Modal ===== */
+  .modal{
+    position:fixed;inset:0;background:rgba(26,26,26,.55);backdrop-filter:blur(4px);
+    display:none;align-items:center;justify-content:center;z-index:200;padding:20px;
+  }
+  .modal.show{display:flex;animation:fadeIn .2s ease}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  .modal-content{
+    background:#fff;border-radius:16px;padding:0;max-width:480px;width:100%;
+    text-align:center;box-shadow:var(--shadow-lg);
+    animation:popIn .3s ease;
+    border:2px solid var(--xl-gold);
+    max-height:90vh;display:flex;flex-direction:column;overflow:hidden;
+  }
+  .modal-content .modal-head{flex-shrink:0}
+  .modal-content .modal-body{overflow-y:auto;flex:1}
+  .modal-head{
+    background:linear-gradient(135deg,var(--xl-red),var(--xl-red-dark));
+    color:var(--xl-gold);padding:20px;
+    border-bottom:2px solid var(--xl-gold);
+  }
+  .modal-head h3{font-family:'Oswald', sans-serif;font-size:24px;color:var(--xl-gold);font-weight:500;letter-spacing:2px;text-transform:uppercase}
+  .modal-body{padding:28px 30px}
+  .modal-body p{color:var(--xl-ink);margin-bottom:20px;line-height:1.7}
+
+  /* ===== Print ===== */
+  @media print{
+    body{background:#fff}
+    .floating-hearts,.compose-card,.toolbar,.note .del,footer .actions,.toast{display:none!important}
+    .xl-banner{background:#C22620!important;color:#D4AF37!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .wall{columns:2}
+    .note{break-inside:avoid;border:1px solid #D4AF37;box-shadow:none}
+  }
+</style>
+</head>
+<body>
+
+<!-- XLeaders brand banner: red fill + gold text, full width -->
+<div class="xl-banner">
+  <svg class="banner-logo" viewBox="0 0 36 36" width="22" height="22" aria-hidden="true">
+    <circle cx="18" cy="18" r="17" fill="none" stroke="#D4AF37" stroke-width="1.5"/>
+    <path d="M10 10 L18 18 L10 26 M26 10 L18 18 L26 26" stroke="#D4AF37" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+  <span>XLEADER 2.0 — WE'RE NEW ONE</span>
+  <svg class="banner-logo" viewBox="0 0 36 36" width="22" height="22" aria-hidden="true">
+    <circle cx="18" cy="18" r="17" fill="none" stroke="#D4AF37" stroke-width="1.5"/>
+    <path d="M10 10 L18 18 L10 26 M26 10 L18 18 L26 26" stroke="#D4AF37" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+</div>
+
+<div class="floating-hearts" id="hearts"></div>
+
+<div class="container">
+
+  <header>
+    <!-- XLeader Logo (SVG placeholder — thay bằng logo thật khi có) -->
+    <div class="brand-logo">
+      <svg viewBox="0 0 120 120" width="110" height="110" aria-label="XLeaders Academy">
+        <defs>
+          <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#C22620"/>
+            <stop offset="100%" stop-color="#9a1d18"/>
+          </linearGradient>
+        </defs>
+        <circle cx="60" cy="60" r="56" fill="url(#logoGrad)" stroke="#D4AF37" stroke-width="3"/>
+        <circle cx="60" cy="60" r="50" fill="none" stroke="#D4AF37" stroke-width="0.8" opacity="0.5"/>
+        <!-- Stylized X mark -->
+        <path d="M32 32 L60 60 L32 88 M88 32 L60 60 L88 88"
+              stroke="#D4AF37" stroke-width="6" fill="none"
+              stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- Top star -->
+        <text x="60" y="22" text-anchor="middle" font-family="serif" font-size="10" fill="#D4AF37" font-weight="700">★</text>
+        <!-- Bottom text -->
+        <text x="60" y="108" text-anchor="middle" font-family="'Oswald', sans-serif" font-size="10" fill="#D4AF37" font-weight="500" letter-spacing="2.5">XLEADERS</text>
+      </svg>
+    </div>
+
+    <div class="brand-title">
+      <h1 class="brand-name">XJourney</h1>
+      <div class="brand-divider">
+        <span class="line"></span>
+        <span class="diamond">◆</span>
+        <span class="line"></span>
+      </div>
+      <p class="brand-tagline">
+        Hành trình chúng tôi <em>Học tập</em> &amp; <em>Trưởng thành</em> cùng nhau
+      </p>
+    </div>
+
+    <div class="quote">
+      Lời yêu thương không bao giờ là muộn — chỉ có những khoảnh khắc ta chưa kịp nói ra.
+    </div>
+  </header>
+
+  <div class="grid">
+
+    <!-- Compose card -->
+    <div class="card compose-card">
+      <div class="card-head">
+        <span class="ico">✍</span>
+        <h2>Viết Lời Yêu Thương</h2>
+      </div>
+      <div class="card-body">
+        <p class="hint">Hãy chân thành — đó là món quà đẹp nhất bạn có thể trao đi.</p>
+
+        <div class="row">
+          <div>
+            <label>Từ (tên của bạn)</label>
+            <input type="text" id="fromName" placeholder="VD: Khang Thuỷ" />
+          </div>
+          <div>
+            <label>Gửi đến</label>
+            <input type="text" id="toName" placeholder="VD: Anh Minh, Chị Hoa..." />
+          </div>
+        </div>
+
+        <label>Email người nhận <span style="text-transform:none;font-weight:400;color:var(--xl-ink-soft);font-size:11px">(tuỳ chọn — để gửi qua Outlook)</span></label>
+        <input type="text" id="toEmail" placeholder="VD: anhminh@xleader.edu.vn" />
+
+        <label>Loại lời nhắn</label>
+        <div class="types" id="types">
+          <span class="chip active" data-type="Yêu thương" data-emoji="❤">❤ Yêu thương</span>
+          <span class="chip" data-type="Biết ơn" data-emoji="🙏">🙏 Biết ơn</span>
+          <span class="chip" data-type="Ghi nhận" data-emoji="★">★ Ghi nhận</span>
+          <span class="chip" data-type="Xin lỗi" data-emoji="✿">✿ Xin lỗi</span>
+          <span class="chip" data-type="Cổ vũ" data-emoji="✦">✦ Cổ vũ</span>
+          <span class="chip" data-type="Tự hào" data-emoji="♛">♛ Tự hào</span>
+        </div>
+
+        <label>Lời nhắn từ trái tim</label>
+        <textarea id="message" placeholder="Cảm ơn anh/chị/bạn vì..."></textarea>
+
+        <div class="suggest">
+          <span>✦</span>
+          <span id="suggestText">Gợi ý: <i>"Cảm ơn bạn vì đã luôn lắng nghe mình mỗi khi mình cần một điểm tựa..."</i></span>
+          <button id="newSuggest">Gợi ý khác</button>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-ghost" id="useSuggest">Dùng gợi ý</button>
+          <button class="btn btn-primary" id="sendBtn">★ Lưu lên bức tường</button>
+        </div>
+
+        <div class="outlook-row">
+          <div class="outlook-label">
+            <span class="ms-icon">
+              <span style="background:#F25022"></span>
+              <span style="background:#7FBA00"></span>
+              <span style="background:#00A4EF"></span>
+              <span style="background:#FFB900"></span>
+            </span>
+            <span>Gửi qua Microsoft Outlook</span>
+            <button class="gear-btn" id="openSettings" title="Cấu hình Graph API">⚙</button>
+          </div>
+
+          <!-- Auth status -->
+          <div id="authStatus" class="auth-status">
+            <span class="auth-dot off"></span>
+            <span class="auth-text">Chưa đăng nhập Microsoft · Cấu hình Graph API trước để dùng "Gửi tự động"</span>
+          </div>
+
+          <div class="outlook-buttons">
+            <button class="btn btn-graph" id="signInBtn" title="Đăng nhập Microsoft 365">
+              <svg width="16" height="16" viewBox="0 0 23 23" fill="none"><rect width="10" height="10" fill="#F25022"/><rect x="13" width="10" height="10" fill="#7FBA00"/><rect y="13" width="10" height="10" fill="#00A4EF"/><rect x="13" y="13" width="10" height="10" fill="#FFB900"/></svg>
+              Đăng nhập Microsoft
+            </button>
+            <button class="btn btn-graph-send" id="graphSendBtn" title="Gửi email TỰ ĐỘNG qua Microsoft Graph API (không cần bấm Send)" disabled>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+              Gửi tự động
+            </button>
+          </div>
+
+          <div class="outlook-buttons" style="margin-top:8px">
+            <button class="btn btn-outlook" id="outlookDesktopBtn" title="Mở Outlook trên máy với nội dung sẵn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4h10a3 3 0 013 3v10a3 3 0 01-3 3H7a3 3 0 01-3-3V7a3 3 0 013-3zm5 4l-5 3v6h10v-6l-5-3z"/></svg>
+              Outlook Desktop
+            </button>
+            <button class="btn btn-outlook" id="outlookWebBtn" title="Mở Outlook Web với nội dung sẵn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm-1 4h2v6h5v2h-7V6z"/></svg>
+              Outlook Web
+            </button>
+            <button class="btn btn-outlook" id="copyMailBtn" title="Copy nội dung email">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4a2 2 0 00-2 2v14h2V3h12V1zm3 4H8a2 2 0 00-2 2v14a2 2 0 002 2h11a2 2 0 002-2V7a2 2 0 00-2-2zm0 16H8V7h11v14z"/></svg>
+              Copy
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Preview card -->
+    <div class="card">
+      <div class="card-head">
+        <span class="ico">✉</span>
+        <h2>Xem Trước</h2>
+      </div>
+      <div class="card-body">
+        <p class="hint">Lời nhắn của bạn sẽ trông như thế này.</p>
+        <div class="preview" id="preview">
+          <div class="placeholder">Bắt đầu viết để xem trước lời yêu thương của bạn...</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Wall of love -->
+  <section class="wall-section">
+    <div class="wall-header">
+      <h2>Bức Tường Yêu Thương XTeam</h2>
+      <div class="wall-stats">
+        <span class="stat-pill"><b id="statTotal">0</b>lời nhắn</span>
+        <span class="stat-pill"><b id="statHearts">0</b>trái tim</span>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <input type="text" id="searchBox" placeholder="🔍 Tìm theo tên, nội dung..." />
+      <select id="filterType">
+        <option value="">Tất cả loại</option>
+        <option>Yêu thương</option>
+        <option>Biết ơn</option>
+        <option>Ghi nhận</option>
+        <option>Xin lỗi</option>
+        <option>Cổ vũ</option>
+        <option>Tự hào</option>
+      </select>
+      <button class="btn btn-ghost" onclick="exportData()">⬇ Xuất file</button>
+      <button class="btn btn-ghost" onclick="window.print()">🖨 In</button>
+    </div>
+
+    <div class="wall" id="wall">
+      <div class="empty">
+        <span class="heart-big">❤</span>
+        Chưa có lời nhắn nào. Hãy là người đầu tiên gieo hạt yêu thương!
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-divider"><span class="diamond">◆</span></div>
+    <div class="footer-brand">XLEADERS ACADEMY</div>
+    <div>Chương trình gắn kết XTeam · Hành trình Học sâu — Làm sâu — Sống sâu</div>
+    <div class="footer-domain" style="margin-top:12px">xleader.edu.vn</div>
+    <div style="margin-top:14px;font-size:11px;opacity:.7">
+      © 2026 XLeaders Academy · Dữ liệu được lưu cục bộ trong trình duyệt của bạn
+    </div>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Settings modal: Microsoft Graph API config -->
+<div class="modal settings-modal" id="settingsModal">
+  <div class="modal-content">
+    <div class="modal-head">
+      <h3>⚙ Cấu hình Microsoft Graph API</h3>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--xl-ink-soft);font-size:13px;margin-bottom:18px">
+        Nhập <b>Client ID</b> và <b>Tenant ID</b> từ Azure AD App Registration để kích hoạt
+        chức năng "Gửi tự động". Cấu hình lưu cục bộ trong trình duyệt.
+      </p>
+
+      <label>Client ID (Application ID)</label>
+      <input type="text" id="cfgClientId" placeholder="VD: 12345678-abcd-1234-abcd-1234567890ab" />
+      <div class="help">Lấy từ Azure Portal → App registrations → Overview</div>
+
+      <label style="margin-top:14px">Tenant ID</label>
+      <input type="text" id="cfgTenantId" placeholder="VD: 87654321-dcba-4321-dcba-0987654321ba (hoặc 'common' / 'organizations')" />
+      <div class="help">Tenant ID của tổ chức XLeaders, hoặc dùng <code>common</code> để chấp nhận mọi tài khoản Microsoft</div>
+
+      <label style="margin-top:14px">Redirect URI</label>
+      <input type="text" id="cfgRedirectUri" readonly />
+      <div class="help">Copy giá trị này và <b>thêm vào Azure App Registration → Authentication → Platform: Single-page application</b></div>
+
+      <div class="guide">
+        <b>📘 Hướng dẫn setup Azure (~5 phút):</b>
+        <ol>
+          <li>Vào <code>portal.azure.com</code> → <b>App registrations</b> → <b>New registration</b></li>
+          <li>Đặt tên app, chọn <b>Accounts in this organizational directory</b> (single tenant)</li>
+          <li>Sau khi tạo, copy <b>Application (client) ID</b> và <b>Directory (tenant) ID</b> → dán vào trên</li>
+          <li>Vào <b>Authentication</b> → <b>Add a platform</b> → <b>Single-page application</b> → dán Redirect URI ở trên</li>
+          <li>Vào <b>API permissions</b> → <b>Add</b> → <b>Microsoft Graph</b> → <b>Delegated</b> → tick <code>Mail.Send</code> + <code>User.Read</code></li>
+          <li>(Khuyến nghị) Bấm <b>Grant admin consent</b> cho cả tổ chức</li>
+        </ol>
+      </div>
+
+      <!-- Firebase config section (for shared wall) -->
+      <div style="margin-top:28px;padding-top:20px;border-top:2px dashed var(--xl-gold)">
+        <h4 style="font-family:'Oswald',sans-serif;color:var(--xl-red);font-size:18px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px">
+          🔥 Bức tường yêu thương dùng chung
+        </h4>
+        <p style="color:var(--xl-ink-soft);font-size:13px;margin-bottom:14px">
+          Cấu hình Firebase Realtime Database để tất cả thành viên XTeam thấy chung bức tường (real-time sync).
+          Để trống nếu chỉ muốn lưu cục bộ.
+        </p>
+
+        <label>Firebase Config (paste object từ Firebase console)</label>
+        <textarea id="cfgFirebase" rows="9" placeholder='{
+  apiKey: "AIza...",
+  authDomain: "your-project.firebaseapp.com",
+  databaseURL: "https://your-project-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "your-project",
+  appId: "1:..."
+}' style="font-family:'Courier New',monospace;font-size:12px;line-height:1.5;width:100%;padding:11px 14px;border-radius:8px;border:1.5px solid #e5d6a8;resize:vertical"></textarea>
+        <div class="help">
+          Vào Firebase Console → Project Settings → "Your apps" → Web app → copy nguyên đoạn <code>firebaseConfig = {...}</code>
+        </div>
+      </div>
+
+      <div class="actions" style="margin-top:22px">
+        <button class="btn btn-ghost" onclick="closeSettings()">Huỷ</button>
+        <button class="btn btn-primary" id="saveSettingsBtn">★ Lưu cấu hình</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="confirmModal">
+  <div class="modal-content">
+    <div class="modal-head">
+      <h3>★ Lời yêu thương đã được gửi</h3>
+    </div>
+    <div class="modal-body">
+      <p id="confirmText">Lời nhắn của bạn đã được lưu lên Bức tường yêu thương XTeam.</p>
+      <div class="actions">
+        <button class="btn btn-ghost" onclick="closeModal()">Đóng</button>
+        <button class="btn btn-primary" onclick="closeModal();window.scrollTo({top:document.getElementById('wall').offsetTop-40,behavior:'smooth'})">Xem bức tường</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============ Suggestions library ============ */
+const SUGGESTIONS = {
+  "Yêu thương":[
+    "Cảm ơn bạn vì đã luôn ở đó, lắng nghe mình mỗi khi mình cần một điểm tựa. Sự hiện diện của bạn là một món quà.",
+    "Có bạn trong đội nhóm này, mình thấy mỗi ngày đi làm đều nhẹ nhàng và ấm áp hơn rất nhiều.",
+    "Mình quý bạn không chỉ vì những gì bạn làm, mà vì chính con người bạn — chân thành, tử tế và luôn nghĩ cho người khác."
+  ],
+  "Biết ơn":[
+    "Cảm ơn bạn vì đã không bỏ cuộc khi mọi thứ khó khăn nhất. Nỗ lực của bạn đã giữ cả đội đứng vững.",
+    "Mình biết ơn bạn vì những lần bạn âm thầm hoàn thành những việc không ai nhìn thấy, nhưng cả team đều được hưởng lợi.",
+    "Cảm ơn bạn đã tin mình, ngay cả khi chính mình cũng không tin vào bản thân. Điều đó có ý nghĩa rất lớn."
+  ],
+  "Ghi nhận":[
+    "Cách bạn xử lý tình huống tuần vừa rồi thật sự rất bản lĩnh — mình học được rất nhiều từ bạn.",
+    "Sự chỉn chu trong từng chi tiết của bạn là điều mà cả team đều nhìn thấy và trân trọng.",
+    "Bạn đã đi xa hơn rất nhiều so với những gì được yêu cầu — và điều đó tạo nên sự khác biệt."
+  ],
+  "Xin lỗi":[
+    "Mình xin lỗi vì khoảnh khắc đó mình đã không lắng nghe bạn đủ kiên nhẫn. Mình muốn làm lại.",
+    "Có những lúc mình đã vô tâm. Mình thực sự xin lỗi và mong bạn cho mình cơ hội để sửa.",
+    "Mình xin lỗi nếu lời nói của mình từng làm bạn buồn — đó không phải điều mình muốn."
+  ],
+  "Cổ vũ":[
+    "Cứ tiếp tục đi nhé! Hành trình của bạn đang truyền cảm hứng cho những người xung quanh nhiều hơn bạn nghĩ.",
+    "Khó khăn này rồi cũng sẽ qua. Mình tin vào bạn — đứng dậy và tiến tiếp thôi!",
+    "Bạn đã đi được xa hơn rất nhiều so với điểm xuất phát. Hãy tự hào về điều đó."
+  ],
+  "Tự hào":[
+    "Mình tự hào khi được đứng cùng đội với bạn. Bạn là phiên bản đẹp nhất của 'đồng đội' mà mình từng gặp.",
+    "Nhìn cách bạn trưởng thành qua từng dự án, mình thực sự tự hào.",
+    "Có bạn trong XTeam là một niềm hãnh diện — và mình muốn bạn biết điều đó."
+  ]
+};
+
+/* ============ State ============ */
+const STORE_KEY = 'xleaders_xteam_love_v1';
+let messages = JSON.parse(localStorage.getItem(STORE_KEY) || '[]');
+let currentType = 'Yêu thương';
+let currentEmoji = '❤';
+
+/* ============ Elements ============ */
+const fromName = document.getElementById('fromName');
+const toName = document.getElementById('toName');
+const toEmail = document.getElementById('toEmail');
+const messageEl = document.getElementById('message');
+const preview = document.getElementById('preview');
+const wall = document.getElementById('wall');
+const types = document.getElementById('types');
+const suggestText = document.getElementById('suggestText');
+const newSuggest = document.getElementById('newSuggest');
+const useSuggest = document.getElementById('useSuggest');
+const sendBtn = document.getElementById('sendBtn');
+const searchBox = document.getElementById('searchBox');
+const filterType = document.getElementById('filterType');
+const toast = document.getElementById('toast');
+const statTotal = document.getElementById('statTotal');
+const statHearts = document.getElementById('statHearts');
+
+/* ============ Type chips ============ */
+types.addEventListener('click', e=>{
+  const chip = e.target.closest('.chip');
+  if(!chip) return;
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  chip.classList.add('active');
+  currentType = chip.dataset.type;
+  currentEmoji = chip.dataset.emoji;
+  rotateSuggest();
+  updatePreview();
+});
+
+/* ============ Suggestions ============ */
+let lastSugIdx = -1;
+function rotateSuggest(){
+  const list = SUGGESTIONS[currentType] || [];
+  if(list.length===0) return;
+  let idx;
+  do { idx = Math.floor(Math.random()*list.length); } while(list.length>1 && idx===lastSugIdx);
+  lastSugIdx = idx;
+  suggestText.innerHTML = `Gợi ý <b style="color:var(--xl-red)">${currentType}</b>: <i>"${list[idx]}"</i>`;
+  suggestText.dataset.text = list[idx];
+}
+newSuggest.addEventListener('click', rotateSuggest);
+useSuggest.addEventListener('click', ()=>{
+  if(suggestText.dataset.text){
+    messageEl.value = suggestText.dataset.text;
+    updatePreview();
+    showToast('★ Đã áp dụng gợi ý — hãy chỉnh sửa theo ý bạn nhé');
+  }
+});
+
+/* ============ Preview ============ */
+function updatePreview(){
+  const f = fromName.value.trim();
+  const t = toName.value.trim();
+  const m = messageEl.value.trim();
+  if(!m && !f && !t){
+    preview.innerHTML = `<div class="placeholder">Bắt đầu viết để xem trước lời yêu thương của bạn...</div>`;
+    return;
+  }
+  preview.innerHTML = `
+    <div class="from-to">${t?`Gửi <b>${escapeHtml(t)}</b>`:''} ${f && t?'·':''} ${f?`Từ <b>${escapeHtml(f)}</b>`:''}</div>
+    <div class="type-tag">${currentEmoji} ${currentType}</div>
+    <div class="body">${m?escapeHtml(m):'<span class="placeholder">Lời nhắn từ trái tim của bạn...</span>'}</div>
+    ${f?`<div class="signature">— ${escapeHtml(f)} —</div>`:''}
+  `;
+}
+[fromName,toName,messageEl].forEach(el=>el.addEventListener('input', updatePreview));
+
+/* ============ Send ============ */
+sendBtn.addEventListener('click', ()=>{
+  const f = fromName.value.trim();
+  const t = toName.value.trim();
+  const m = messageEl.value.trim();
+  if(!f){ showToast('Hãy điền tên của bạn trước nhé'); fromName.focus(); return; }
+  if(!t){ showToast('Bạn muốn gửi đến ai vậy?'); toName.focus(); return; }
+  if(!m || m.length < 10){ showToast('Hãy viết một chút gì đó từ trái tim nhé'); messageEl.focus(); return; }
+
+  // If Firebase is configured, require Microsoft sign-in to post on shared wall
+  if(loadFirebaseConfig() && !currentAccount){
+    showToast('⚠ Hãy đăng nhập Microsoft để đăng lên bức tường chung XTeam');
+    return;
+  }
+
+  const msg = {
+    id: Date.now()+'-'+Math.random().toString(36).slice(2,7),
+    from: f, to: t,
+    type: currentType, emoji: currentEmoji,
+    body: m, hearts: 0,
+    at: new Date().toISOString(),
+    authorEmail: currentAccount?.username || null
+  };
+
+  if(firebaseDb){
+    fbAddMessage(msg);
+  } else {
+    messages.unshift(msg);
+    saveAndRender();
+  }
+
+  burstHearts();
+  const where = firebaseDb ? 'bức tường <b style="color:var(--xl-red)">chung XTeam</b>' : 'bức tường';
+  showModal(`Lời yêu thương từ <b style="color:var(--xl-red)">${escapeHtml(f)}</b> gửi <b style="color:var(--xl-red)">${escapeHtml(t)}</b> đã được lưu lên ${where}.`);
+  messageEl.value=''; toName.value=''; toEmail.value='';
+  updatePreview();
+});
+
+/* ============ Outlook integration ============ */
+function buildEmail(){
+  const f = fromName.value.trim();
+  const t = toName.value.trim();
+  const e = toEmail.value.trim();
+  const m = messageEl.value.trim();
+  if(!f){ showToast('Hãy điền tên của bạn trước nhé'); fromName.focus(); return null; }
+  if(!t){ showToast('Bạn muốn gửi đến ai vậy?'); toName.focus(); return null; }
+  if(!m || m.length < 10){ showToast('Hãy viết một chút gì đó từ trái tim nhé'); messageEl.focus(); return null; }
+
+  const subject = `${currentEmoji} [${currentType}] Lời nhắn từ ${f} gửi ${t} — XTeam`;
+  const body =
+    `Gửi ${t} thân mến,\n\n` +
+    `${m}\n\n` +
+    `— ${f} —\n\n` +
+    `${'─'.repeat(50)}\n` +
+    `Lời nhắn ${currentEmoji} ${currentType} từ chương trình\n` +
+    `"Tôi học nói lời yêu thương" — XLeaders Academy · XTeam\n` +
+    `xleader.edu.vn\n`;
+  return { to: e, subject, body };
+}
+
+document.getElementById('outlookDesktopBtn').addEventListener('click', ()=>{
+  const m = buildEmail(); if(!m) return;
+  const url = `mailto:${encodeURIComponent(m.to)}?subject=${encodeURIComponent(m.subject)}&body=${encodeURIComponent(m.body)}`;
+  window.location.href = url;
+  showToast('★ Đang mở Outlook Desktop...');
+});
+
+document.getElementById('outlookWebBtn').addEventListener('click', ()=>{
+  const m = buildEmail(); if(!m) return;
+  const params = new URLSearchParams({
+    path:'/mail/action/compose',
+    to: m.to,
+    subject: m.subject,
+    body: m.body
+  });
+  const url = `https://outlook.office.com/mail/deeplink/compose?${params.toString()}`;
+  window.open(url, '_blank', 'noopener');
+  showToast('★ Đang mở Outlook Web...');
+});
+
+document.getElementById('copyMailBtn').addEventListener('click', async ()=>{
+  const m = buildEmail(); if(!m) return;
+  const text =
+    (m.to ? `To: ${m.to}\n` : '') +
+    `Subject: ${m.subject}\n\n` +
+    m.body;
+  try{
+    await navigator.clipboard.writeText(text);
+    showToast('★ Đã copy nội dung email vào clipboard');
+  }catch(err){
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    showToast('★ Đã copy nội dung email');
+  }
+});
+
+/* ============ Wall render ============ */
+function renderWall(){
+  const q = (searchBox.value||'').toLowerCase().trim();
+  const ft = filterType.value;
+  const filtered = messages.filter(m=>{
+    if(ft && m.type !== ft) return false;
+    if(q){
+      return m.from.toLowerCase().includes(q)
+        || m.to.toLowerCase().includes(q)
+        || m.body.toLowerCase().includes(q);
+    }
+    return true;
+  });
+
+  statTotal.textContent = messages.length;
+  statHearts.textContent = messages.reduce((s,m)=>s+(m.hearts||0),0);
+
+  if(filtered.length===0){
+    wall.innerHTML = `<div class="empty"><span class="heart-big">❤</span>${messages.length===0?'Chưa có lời nhắn nào. Hãy là người đầu tiên gieo hạt yêu thương!':'Không tìm thấy lời nhắn nào phù hợp.'}</div>`;
+    return;
+  }
+
+  wall.innerHTML = filtered.map(m=>{
+    // Only show delete button if user is the author (when Firebase) or no auth (local)
+    const canDelete = !firebaseDb || (currentAccount && m.authorEmail === currentAccount.username);
+    return `
+    <div class="note" data-id="${m.id}">
+      ${canDelete ? `<button class="del" title="Xoá" onclick="delMsg('${m.id}')">✕</button>` : ''}
+      <div class="ribbon">
+        <span>${m.emoji} ${escapeHtml(m.type)}</span>
+        <small>${formatDate(m.at)}</small>
+      </div>
+      <div class="nb">${escapeHtml(m.body)}</div>
+      <div class="nf">
+        <span>Từ <b>${escapeHtml(m.from)}</b> → <b>${escapeHtml(m.to)}</b></span>
+        <span class="react">
+          <button onclick="addHeart('${m.id}')">❤ ${m.hearts||0}</button>
+        </span>
+      </div>
+      ${m.authorEmail ? `<div class="nauthor">📧 ${escapeHtml(m.authorEmail)}</div>` : ''}
+    </div>
+  `;}).join('');
+}
+
+function saveAndRender(){
+  localStorage.setItem(STORE_KEY, JSON.stringify(messages));
+  renderWall();
+}
+
+window.delMsg = id => {
+  if(!confirm('Bạn có chắc muốn gỡ lời nhắn này khỏi bức tường?')) return;
+  if(firebaseDb){
+    fbDeleteMessage(id);
+  } else {
+    messages = messages.filter(m=>m.id!==id);
+    saveAndRender();
+  }
+};
+
+window.addHeart = id => {
+  if(firebaseDb){
+    fbAddHeart(id);
+  } else {
+    const m = messages.find(x=>x.id===id);
+    if(!m) return;
+    m.hearts = (m.hearts||0)+1;
+    saveAndRender();
+  }
+  const note = document.querySelector(`[data-id="${id}"]`);
+  if(note){
+    note.style.transform='scale(1.03)';
+    setTimeout(()=>note.style.transform='',200);
+  }
+};
+
+searchBox.addEventListener('input', renderWall);
+filterType.addEventListener('change', renderWall);
+
+/* ============ Export ============ */
+window.exportData = ()=>{
+  if(messages.length===0){ showToast('Chưa có gì để xuất'); return; }
+  const text = messages.map(m=>
+    `${m.emoji} [${m.type}]  ${formatDate(m.at)}\n` +
+    `Từ ${m.from} → ${m.to}\n` +
+    `"${m.body}"\n` +
+    `${'─'.repeat(56)}`
+  ).join('\n\n');
+  const header =
+    `╔══════════════════════════════════════════════════════════╗\n` +
+    `║   XLEADERS ACADEMY · BỨC TƯỜNG YÊU THƯƠNG XTEAM          ║\n` +
+    `║   xleader.edu.vn                                         ║\n` +
+    `╚══════════════════════════════════════════════════════════╝\n\n` +
+    `Xuất ngày: ${new Date().toLocaleString('vi-VN')}\n` +
+    `Tổng số lời nhắn: ${messages.length}\n` +
+    `${'═'.repeat(58)}\n\n`;
+  const blob = new Blob([header+text], {type:'text/plain;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `xleaders-xteam-loi-yeu-thuong-${new Date().toISOString().slice(0,10)}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('★ Đã xuất file thành công');
+};
+
+/* ============ Helpers ============ */
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function formatDate(iso){
+  const d = new Date(iso);
+  const now = new Date();
+  const diff = (now-d)/1000;
+  if(diff<60) return 'vừa xong';
+  if(diff<3600) return Math.floor(diff/60)+' phút trước';
+  if(diff<86400) return Math.floor(diff/3600)+' giờ trước';
+  if(diff<86400*7) return Math.floor(diff/86400)+' ngày trước';
+  return d.toLocaleDateString('vi-VN');
+}
+function showToast(msg){
+  toast.textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(()=>toast.classList.remove('show'), 3000);
+}
+function showModal(html){
+  document.getElementById('confirmText').innerHTML = html;
+  document.getElementById('confirmModal').classList.add('show');
+}
+window.closeModal = ()=>document.getElementById('confirmModal').classList.remove('show');
+
+/* ============ Floating hearts ============ */
+const heartsEl = document.getElementById('hearts');
+const HEART_CHARS = ['❤','♥','✦','★','♛','◆'];
+const HEART_COLORS = ['#C22620','#D4AF37','#9a1d18','#e8c963'];
+function spawnHeart(){
+  const h = document.createElement('span');
+  h.className='heart';
+  h.textContent = HEART_CHARS[Math.floor(Math.random()*HEART_CHARS.length)];
+  h.style.color = HEART_COLORS[Math.floor(Math.random()*HEART_COLORS.length)];
+  h.style.left = Math.random()*100+'%';
+  h.style.fontSize = (14+Math.random()*16)+'px';
+  h.style.animationDuration = (10+Math.random()*12)+'s';
+  heartsEl.appendChild(h);
+  setTimeout(()=>h.remove(), 22000);
+}
+setInterval(spawnHeart, 1400);
+for(let i=0;i<5;i++) setTimeout(spawnHeart, i*350);
+function burstHearts(){
+  for(let i=0;i<14;i++) setTimeout(spawnHeart, i*60);
+}
+
+/* ============ Sample messages (only when Firebase NOT configured) ============ */
+if(messages.length===0 && !localStorage.getItem('xleaders_firebase_config_v1')){
+  messages = [
+    {id:'sample1', from:'Khang Thuỷ', to:'Cả XTeam', type:'Biết ơn', emoji:'🙏',
+     body:'Cảm ơn cả đội đã cùng nhau đi qua một quý nhiều thử thách. Mỗi người đều đã đặt một viên gạch quan trọng vào hành trình chung của XLeaders.',
+     hearts:5, at:new Date(Date.now()-86400000*2).toISOString()},
+    {id:'sample2', from:'Một thành viên giấu tên', to:'Anh trưởng nhóm', type:'Ghi nhận', emoji:'★',
+     body:'Cách anh giữ bình tĩnh và dẫn dắt khi cả team căng thẳng nhất là điều em sẽ học cả sự nghiệp.',
+     hearts:3, at:new Date(Date.now()-3600000*5).toISOString()}
+  ];
+  saveAndRender();
+}
+
+/* ============ Firebase Realtime Database integration ============ */
+const FIREBASE_CFG_KEY = 'xleaders_firebase_config_v1';
+let firebaseApp = null;
+let firebaseDb = null;
+let firebaseListener = null;
+
+function loadFirebaseConfig(){
+  try { return JSON.parse(localStorage.getItem(FIREBASE_CFG_KEY)) || null; }
+  catch { return null; }
+}
+function saveFirebaseConfig(cfg){
+  if(cfg) localStorage.setItem(FIREBASE_CFG_KEY, JSON.stringify(cfg));
+  else localStorage.removeItem(FIREBASE_CFG_KEY);
+}
+
+function initFirebase(){
+  // Cleanup previous
+  if(firebaseListener){
+    try { firebaseDb.ref('messages').off('value', firebaseListener); } catch {}
+    firebaseListener = null;
+  }
+  if(firebaseApp){
+    try { firebaseApp.delete(); } catch {}
+    firebaseApp = null; firebaseDb = null;
+  }
+
+  const cfg = loadFirebaseConfig();
+  if(!cfg){
+    updateWallGate();
+    return;
+  }
+  if(typeof firebase === 'undefined'){
+    showToast('⚠ Firebase SDK chưa tải xong');
+    return;
+  }
+  try {
+    firebaseApp = firebase.initializeApp(cfg, 'xjourney-' + Date.now());
+    firebaseDb = firebase.database(firebaseApp);
+    subscribeFirebaseMessages();
+  } catch(err){
+    console.error(err);
+    showToast('⚠ Lỗi init Firebase: '+err.message);
+  }
+}
+
+function subscribeFirebaseMessages(){
+  if(!firebaseDb) return;
+  firebaseListener = firebaseDb.ref('messages').on('value', snap => {
+    const data = snap.val() || {};
+    messages = Object.entries(data)
+      .map(([id, msg]) => ({...msg, id}))
+      .sort((a,b) => (b.at || '').localeCompare(a.at || ''));
+    renderWall();
+  }, err => {
+    console.error(err);
+    showToast('⚠ Lỗi đọc Firebase: '+err.message);
+  });
+}
+
+function fbAddMessage(msg){
+  if(!firebaseDb) return false;
+  // Strip client-generated id; Firebase generates its own key
+  const {id, ...payload} = msg;
+  firebaseDb.ref('messages').push(payload);
+  return true;
+}
+function fbDeleteMessage(id){
+  if(!firebaseDb) return false;
+  firebaseDb.ref('messages/' + id).remove();
+  return true;
+}
+function fbAddHeart(id){
+  if(!firebaseDb) return false;
+  firebaseDb.ref('messages/' + id + '/hearts').transaction(curr => (curr || 0) + 1);
+  return true;
+}
+
+/* ============ Wall sign-in gate ============ */
+function updateWallGate(){
+  const wallSection = document.querySelector('.wall-section');
+  if(!wallSection) return;
+  let gate = document.getElementById('wallGate');
+
+  // Need gate ONLY if Firebase configured
+  if(!loadFirebaseConfig()){
+    if(gate) gate.style.display = 'none';
+    document.getElementById('wall').style.display = '';
+    document.querySelector('.toolbar').style.display = '';
+    return;
+  }
+
+  if(!currentAccount){
+    if(!gate){
+      gate = document.createElement('div');
+      gate.id = 'wallGate';
+      gate.className = 'wall-gate';
+      gate.innerHTML = `
+        <div class="wall-gate-content">
+          <div class="wall-gate-icon">🔒</div>
+          <h3>Bức tường yêu thương dùng chung</h3>
+          <p>Chỉ thành viên <b>XLEADERS</b> mới có thể xem và đăng lời nhắn.<br>Vui lòng đăng nhập tài khoản Microsoft của bạn.</p>
+          <button class="btn btn-primary" onclick="document.getElementById('signInBtn').click()" style="margin-top:14px">
+            <svg width="16" height="16" viewBox="0 0 23 23" fill="none" style="margin-right:6px;vertical-align:middle"><rect width="10" height="10" fill="#F25022"/><rect x="13" width="10" height="10" fill="#7FBA00"/><rect y="13" width="10" height="10" fill="#00A4EF"/><rect x="13" y="13" width="10" height="10" fill="#FFB900"/></svg>
+          Đăng nhập Microsoft
+          </button>
+        </div>`;
+      wallSection.appendChild(gate);
+    }
+    gate.style.display = '';
+    document.getElementById('wall').style.display = 'none';
+    document.querySelector('.toolbar').style.display = 'none';
+  } else {
+    if(gate) gate.style.display = 'none';
+    document.getElementById('wall').style.display = '';
+    document.querySelector('.toolbar').style.display = '';
+  }
+}
+
+/* ============ Microsoft Graph API integration ============ */
+const GRAPH_CFG_KEY = 'xleaders_graph_config_v1';
+let msalInstance = null;
+let currentAccount = null;
+
+const cfgClientId = document.getElementById('cfgClientId');
+const cfgTenantId = document.getElementById('cfgTenantId');
+const cfgRedirectUri = document.getElementById('cfgRedirectUri');
+const settingsModal = document.getElementById('settingsModal');
+const authStatus = document.getElementById('authStatus');
+const signInBtn = document.getElementById('signInBtn');
+const graphSendBtn = document.getElementById('graphSendBtn');
+
+// Set redirect URI to current origin + path
+cfgRedirectUri.value = window.location.origin + window.location.pathname;
+
+function loadGraphConfig(){
+  try { return JSON.parse(localStorage.getItem(GRAPH_CFG_KEY)) || {}; }
+  catch { return {}; }
+}
+function saveGraphConfig(cfg){
+  localStorage.setItem(GRAPH_CFG_KEY, JSON.stringify(cfg));
+}
+
+function initMsal(){
+  const cfg = loadGraphConfig();
+  if(!cfg.clientId){
+    msalInstance = null;
+    updateAuthUI();
+    return;
+  }
+  if(typeof msal === 'undefined'){
+    setAuthMessage('⚠ Không tải được MSAL library — kiểm tra kết nối mạng');
+    return;
+  }
+  try {
+    msalInstance = new msal.PublicClientApplication({
+      auth: {
+        clientId: cfg.clientId,
+        authority: `https://login.microsoftonline.com/${cfg.tenantId || 'common'}`,
+        redirectUri: cfg.redirectUri || (window.location.origin + window.location.pathname)
+      },
+      cache: { cacheLocation: 'localStorage', storeAuthStateInCookie: false }
+    });
+    msalInstance.initialize().then(()=>{
+      const accounts = msalInstance.getAllAccounts();
+      if(accounts.length > 0){
+        currentAccount = accounts[0];
+        msalInstance.setActiveAccount(currentAccount);
+      }
+      updateAuthUI();
+    });
+  } catch(err){
+    console.error(err);
+    setAuthMessage('⚠ Lỗi khởi tạo MSAL: '+err.message);
+  }
+}
+
+function updateAuthUI(){
+  const cfg = loadGraphConfig();
+  if(!cfg.clientId){
+    authStatus.innerHTML = `
+      <span class="auth-dot off"></span>
+      <span class="auth-text">Chưa cấu hình Graph API · <a onclick="openSettings()">Cấu hình ngay</a> để dùng "Gửi tự động"</span>`;
+    signInBtn.style.display = 'none';
+    graphSendBtn.disabled = true;
+    return;
+  }
+  if(currentAccount){
+    authStatus.innerHTML = `
+      <span class="auth-dot on"></span>
+      <span class="auth-text">Đã đăng nhập: <b>${escapeHtml(currentAccount.username)}</b> · <a onclick="signOut()">Đăng xuất</a></span>`;
+    signInBtn.textContent = '🔄 Đổi tài khoản';
+    signInBtn.style.display = '';
+    graphSendBtn.disabled = false;
+  } else {
+    authStatus.innerHTML = `
+      <span class="auth-dot off"></span>
+      <span class="auth-text">Đã cấu hình Graph API · Bấm <b>Đăng nhập Microsoft</b> để gửi mail tự động</span>`;
+    signInBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 23 23" fill="none"><rect width="10" height="10" fill="#F25022"/><rect x="13" width="10" height="10" fill="#7FBA00"/><rect y="13" width="10" height="10" fill="#00A4EF"/><rect x="13" y="13" width="10" height="10" fill="#FFB900"/></svg> Đăng nhập Microsoft`;
+    signInBtn.style.display = '';
+    graphSendBtn.disabled = true;
+  }
+}
+
+function setAuthMessage(text){
+  authStatus.innerHTML = `<span class="auth-dot off"></span><span class="auth-text">${text}</span>`;
+}
+
+const cfgFirebase = document.getElementById('cfgFirebase');
+
+window.openSettings = ()=>{
+  const cfg = loadGraphConfig();
+  cfgClientId.value = cfg.clientId || '';
+  cfgTenantId.value = cfg.tenantId || '';
+  if(cfg.redirectUri) cfgRedirectUri.value = cfg.redirectUri;
+  const fbCfg = loadFirebaseConfig();
+  cfgFirebase.value = fbCfg ? JSON.stringify(fbCfg, null, 2) : '';
+  settingsModal.classList.add('show');
+};
+window.closeSettings = ()=>settingsModal.classList.remove('show');
+document.getElementById('openSettings').addEventListener('click', openSettings);
+document.getElementById('saveSettingsBtn').addEventListener('click', ()=>{
+  const cfg = {
+    clientId: cfgClientId.value.trim(),
+    tenantId: cfgTenantId.value.trim() || 'common',
+    redirectUri: cfgRedirectUri.value.trim()
+  };
+  if(!cfg.clientId){ showToast('⚠ Vui lòng nhập Client ID'); return; }
+  saveGraphConfig(cfg);
+
+  // Firebase config (optional)
+  const fbText = cfgFirebase.value.trim();
+  if(fbText){
+    try {
+      // Parse JS object literal (allow unquoted keys)
+      const parsed = parseFirebaseConfig(fbText);
+      if(!parsed.apiKey || !parsed.databaseURL){
+        showToast('⚠ Firebase config thiếu apiKey hoặc databaseURL');
+        return;
+      }
+      saveFirebaseConfig(parsed);
+    } catch(err){
+      showToast('⚠ Firebase config sai format: '+err.message);
+      return;
+    }
+  } else {
+    saveFirebaseConfig(null);
+  }
+
+  closeSettings();
+  showToast('★ Đã lưu cấu hình');
+  currentAccount = null;
+  initMsal();
+  initFirebase();
+});
+
+function parseFirebaseConfig(text){
+  // Strip leading "const firebaseConfig = " and trailing ";"
+  let t = text.replace(/^.*?=\s*/s, '').replace(/;[\s\S]*$/, '').trim();
+  // Try JSON.parse first
+  try { return JSON.parse(t); } catch {}
+  // Add quotes around keys (e.g. apiKey: → "apiKey":)
+  t = t.replace(/([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:/g, '$1"$2":');
+  // Replace single quotes with double quotes
+  t = t.replace(/'/g, '"');
+  // Remove trailing commas
+  t = t.replace(/,(\s*[}\]])/g, '$1');
+  return JSON.parse(t);
+}
+
+signInBtn.addEventListener('click', async ()=>{
+  if(!msalInstance){ showToast('⚠ Cấu hình Graph API trước đã'); openSettings(); return; }
+  try {
+    const result = await msalInstance.loginPopup({
+      scopes: ['User.Read','Mail.Send'],
+      prompt: 'select_account'
+    });
+    // Tenant check — chỉ cho phép user thuộc XLeaders tenant
+    const expectedTenant = (loadGraphConfig().tenantId || '').toLowerCase();
+    const userTenant = (result.account.idTokenClaims?.tid || '').toLowerCase();
+    if(expectedTenant && expectedTenant !== 'common' && expectedTenant !== 'organizations' && userTenant !== expectedTenant){
+      await msalInstance.logoutPopup({ account: result.account }).catch(()=>{});
+      showToast('⚠ Tài khoản không thuộc tổ chức XLEADERS. Vui lòng dùng email xleader.edu.vn');
+      return;
+    }
+    currentAccount = result.account;
+    msalInstance.setActiveAccount(currentAccount);
+    updateAuthUI();
+    updateWallGate();
+    showToast('★ Đăng nhập thành công: '+currentAccount.username);
+  } catch(err){
+    console.error(err);
+    showToast('⚠ Đăng nhập thất bại: '+(err.errorMessage||err.message||'unknown'));
+  }
+});
+
+window.signOut = async ()=>{
+  if(!msalInstance) return;
+  try {
+    await msalInstance.logoutPopup({ account: currentAccount });
+  } catch(err){ console.error(err); }
+  currentAccount = null;
+  updateAuthUI();
+  updateWallGate();
+  showToast('Đã đăng xuất');
+};
+
+async function getGraphToken(){
+  const tokenResp = await msalInstance.acquireTokenSilent({
+    scopes: ['Mail.Send'],
+    account: currentAccount
+  }).catch(async ()=>{
+    return await msalInstance.acquireTokenPopup({ scopes: ['Mail.Send'] });
+  });
+  return tokenResp.accessToken;
+}
+
+graphSendBtn.addEventListener('click', async ()=>{
+  if(!currentAccount){ showToast('⚠ Hãy đăng nhập Microsoft trước'); return; }
+  const m = buildEmail(); if(!m) return;
+  if(!m.to){ showToast('⚠ Cần nhập Email người nhận để gửi tự động'); toEmail.focus(); return; }
+
+  graphSendBtn.disabled = true;
+  graphSendBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="50" stroke-dashoffset="20"><animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1s" repeatCount="indefinite"/></circle></svg> Đang gửi...';
+
+  try {
+    const token = await getGraphToken();
+    const htmlBody = `
+<div style="font-family:'Segoe UI',sans-serif;max-width:600px;margin:0 auto;background:#FFF8E1;padding:0;border:2px solid #D4AF37;border-radius:12px;overflow:hidden">
+  <div style="background:linear-gradient(135deg,#C22620,#9a1d18);color:#D4AF37;padding:18px;text-align:center;font-weight:700;letter-spacing:2px;border-bottom:2px solid #D4AF37">
+    ★ XLEADERS ACADEMY · XJOURNEY ★
+  </div>
+  <div style="padding:30px">
+    <div style="display:inline-block;background:#C22620;color:#D4AF37;padding:5px 14px;border-radius:6px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px">
+      ${m.subject.includes('[')?escapeHtml(currentType):''} ${currentEmoji}
+    </div>
+    <p style="color:#666;font-size:14px;margin:0 0 6px">Gửi <b style="color:#C22620">${escapeHtml(toName.value.trim())}</b> thân mến,</p>
+    <div style="font-family:Georgia,serif;font-style:italic;font-size:18px;line-height:1.75;color:#2a2a2a;padding:20px 0;border-top:1px dashed #D4AF37;border-bottom:1px dashed #D4AF37;margin:14px 0;white-space:pre-wrap">${escapeHtml(messageEl.value.trim())}</div>
+    <div style="text-align:right;font-family:Georgia,serif;font-style:italic;color:#C22620;font-weight:600">— ${escapeHtml(fromName.value.trim())} —</div>
+  </div>
+  <div style="background:#fff;padding:14px 20px;text-align:center;font-size:12px;color:#888;border-top:1px solid #D4AF37">
+    Chương trình <b style="color:#C22620">"Tôi học nói lời yêu thương"</b> — XJourney<br>
+    <span style="color:#D4AF37;font-weight:700;letter-spacing:1.5px">XLEADER.EDU.VN</span>
+  </div>
+</div>`;
+
+    const mail = {
+      message: {
+        subject: m.subject,
+        body: { contentType: 'HTML', content: htmlBody },
+        toRecipients: [{ emailAddress: { address: m.to } }]
+      },
+      saveToSentItems: true
+    };
+
+    const resp = await fetch('https://graph.microsoft.com/v1.0/me/sendMail', {
+      method:'POST',
+      headers:{
+        'Authorization':'Bearer '+token,
+        'Content-Type':'application/json'
+      },
+      body: JSON.stringify(mail)
+    });
+
+    if(resp.status === 202){
+      showModal(`✅ Email yêu thương đã được <b>gửi tự động</b> đến <b style="color:var(--xl-red)">${escapeHtml(m.to)}</b> qua Microsoft Graph!`);
+      // Also save to wall
+      messages.unshift({
+        id: Date.now()+'-'+Math.random().toString(36).slice(2,7),
+        from: fromName.value.trim(), to: toName.value.trim(),
+        type: currentType, emoji: currentEmoji,
+        body: messageEl.value.trim(), hearts: 0,
+        at: new Date().toISOString(), sentEmail: m.to
+      });
+      saveAndRender();
+      burstHearts();
+      messageEl.value=''; toName.value=''; toEmail.value='';
+      updatePreview();
+    } else {
+      const err = await resp.text();
+      throw new Error(`HTTP ${resp.status}: ${err}`);
+    }
+  } catch(err){
+    console.error(err);
+    showToast('⚠ Gửi thất bại: '+(err.message||'unknown'));
+  } finally {
+    graphSendBtn.disabled = false;
+    graphSendBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg> Gửi tự động';
+  }
+});
+
+/* ============ Init ============ */
+rotateSuggest();
+renderWall();
+updatePreview();
+initMsal();
+initFirebase();
+updateWallGate();
+</script>
+</body>
+</html>
